@@ -1,0 +1,414 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", "Noto Sans JP", sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* ===== Header ===== */
+header {
+  background: #1a73e8;
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.02em; }
+nav { display: flex; gap: 0.5rem; }
+
+/* ===== Tab Buttons ===== */
+.tab-btn {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.6);
+  color: #fff;
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.15s;
+}
+.tab-btn:hover { background: rgba(255,255,255,0.15); }
+.tab-btn.active { background: #fff; color: #1a73e8; border-color: #fff; font-weight: 600; }
+
+/* ===== Main Layout ===== */
+main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.tab-content.hidden { display: none; }
+
+h2 { font-size: 1.3rem; margin-bottom: 1.2rem; color: #1a73e8; }
+h3 { font-size: 1rem; margin-bottom: 0.8rem; color: #444; }
+
+/* ===== Drop Zone ===== */
+.drop-zone {
+  border: 2.5px dashed #1a73e8;
+  border-radius: 10px;
+  padding: 2.5rem;
+  text-align: center;
+  background: #fff;
+  color: #555;
+  transition: background 0.2s;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+}
+.drop-zone.dragover { background: #e8f0fe; }
+.drop-zone p { margin-bottom: 0.8rem; line-height: 1.6; }
+.drop-hint {
+  font-size: 0.78rem;
+  color: #999;
+  margin-top: 0.4rem;
+  margin-bottom: 0 !important;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1.2rem;
+  border: 1.5px solid #1a73e8;
+  background: #fff;
+  color: #1a73e8;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s, color 0.15s;
+}
+.btn:hover { background: #e8f0fe; }
+.btn-primary { background: #1a73e8; color: #fff; }
+.btn-primary:hover { background: #1557b0; }
+.btn-secondary { border-color: #888; color: #555; }
+.btn-secondary:hover { background: #f0f0f0; }
+.btn-danger { border-color: #d93025; color: #d93025; }
+.btn-danger:hover { background: #fce8e6; }
+
+/* ===== File List ===== */
+.file-list { background: #fff; border-radius: 8px; padding: 1rem; margin-bottom: 1.2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.file-list ul { list-style: none; }
+.file-list li {
+  display: flex;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+}
+.file-list li:last-child { border-bottom: none; }
+.file-badge {
+  display: inline-block;
+  background: #1a73e8;
+  color: #fff;
+  border-radius: 4px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.file-page-count { color: #777; font-size: 0.8rem; }
+
+/* ===== Sortable Page List (サムネイルカード対応) ===== */
+.sortable-list {
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  min-height: 80px;
+  max-height: 620px;
+  overflow-y: auto;
+  /* サムネイルカードをラップ表示 */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-content: flex-start;
+}
+
+/* ===== Page Card (サムネイル付き) ===== */
+.page-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.4rem 0.4rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  cursor: grab;
+  user-select: none;
+  width: 106px;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.page-item:hover {
+  background: #e8f0fe;
+  border-color: #1a73e8;
+  box-shadow: 0 2px 6px rgba(26,115,232,0.15);
+}
+.page-item.sortable-chosen { opacity: 0.6; cursor: grabbing; }
+.page-item.sortable-ghost { opacity: 0.3; }
+
+/* サムネイル画像 */
+.page-thumb {
+  width: 80px;
+  height: 113px;  /* A4 比率 */
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #fff;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* サムネイル未取得時のプレースホルダ */
+.page-thumb-placeholder {
+  width: 80px;
+  height: 113px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f4ff;
+  border: 1px solid #c5d8fc;
+  border-radius: 3px;
+  color: #1a73e8;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ドラッグハンドル（カード上部中央） */
+.drag-handle {
+  color: #bbb;
+  font-size: 0.9rem;
+  cursor: grab;
+  line-height: 1;
+}
+
+/* カード下部テキスト情報 */
+.page-card-info {
+  width: 100%;
+  text-align: center;
+  min-width: 0;
+}
+.page-card-filename {
+  font-size: 0.68rem;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 96px;
+  display: block;
+}
+.page-card-num {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #444;
+}
+
+/* 削除ボタン（ホバー時表示） */
+.remove-page {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(217, 48, 37, 0.12);
+  border: none;
+  color: #d93025;
+  font-size: 0.65rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  padding: 0;
+}
+.page-item:hover .remove-page { opacity: 1; }
+.remove-page:hover { background: rgba(217, 48, 37, 0.25) !important; }
+
+/* ===== Add Page Controls ===== */
+.add-page-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; }
+.add-page-row select, .add-page-row input[type=number] {
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.add-page-row select:focus, .add-page-row input:focus { border-color: #1a73e8; outline: none; }
+
+/* ===== Output Row ===== */
+.output-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+}
+.output-row label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; }
+.output-row input[type=text] {
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 220px;
+}
+
+/* ===== Form Group ===== */
+.form-group {
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.8rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.form-group label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; font-weight: 600; }
+.form-group input[type=text],
+.form-group input[type=number] {
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+.form-group input:focus { border-color: #1a73e8; outline: none; }
+.form-group small { color: #777; font-size: 0.8rem; margin-top: 0.2rem; font-weight: 400; }
+.radio-group { display: flex; gap: 1.5rem; margin-top: 0.3rem; font-weight: 400; }
+.radio-group label { flex-direction: row; align-items: center; gap: 0.4rem; }
+
+/* ===== ファイル名テンプレート解説ブロック ===== */
+.filename-help {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  background: #f8f9fc;
+  border-radius: 6px;
+  border-left: 3px solid #1a73e8;
+  font-size: 0.8rem;
+  color: #555;
+  font-weight: 400;
+}
+.filename-help .help-title {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.35rem;
+}
+.filename-help ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.45rem 0;
+}
+.filename-help li { padding: 0.12rem 0; }
+.filename-help code {
+  background: #e4e9f5;
+  padding: 0.08rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.76rem;
+  font-family: "Consolas", "Courier New", monospace;
+}
+.filename-help p { margin-top: 0.35rem; line-height: 1.5; }
+.help-note {
+  color: #777;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+/* ===== File Info ===== */
+.file-info {
+  background: #e8f0fe;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  display: flex;
+  gap: 1rem;
+}
+
+/* ===== Preset Row ===== */
+.preset-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.preset-row label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; font-weight: 600; }
+.preset-row select {
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 200px;
+}
+.preset-row select:focus { border-color: #1a73e8; outline: none; }
+
+/* ===== Action Row ===== */
+.action-row { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.8rem; }
+
+/* ===== Preset Manager ===== */
+#preset-manager {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+#preset-list { list-style: none; }
+.preset-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+.preset-item:last-child { border-bottom: none; }
+.preset-item-name { font-weight: 600; flex: 1; }
+.preset-item-desc { color: #666; font-size: 0.82rem; flex: 2; }
+
+/* ===== Status Messages ===== */
+.status-msg {
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.status-msg.success { background: #e6f4ea; color: #188038; border: 1px solid #34a853; }
+.status-msg.error { background: #fce8e6; color: #c5221f; border: 1px solid #ea4335; }
+.status-msg.loading { background: #e8f0fe; color: #1a73e8; border: 1px solid #4285f4; }
+
+/* ===== Modal ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.modal-content h3 { font-size: 1.1rem; }
+.modal-content label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; }
+.modal-content input[type=text] {
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+
+/* ===== Utility ===== */
+.hidden { display: none !important; }
