@@ -1,22 +1,12 @@
 {
-  "name": "Python Development Template",
+  "name": "AI Dev Template (Python 3.14 + Claude Code)",
   "image": "mcr.microsoft.com/devcontainers/python:3.14",
-
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "nodeGypDependencies": true,
-      "version": "lts"
-    }
-  },
-
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "GitHub.copilot",
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "Anthropic.claude-code"
       ],
       "settings": {
         "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
@@ -25,10 +15,14 @@
       }
     }
   },
-
-  "onCreateCommand": "pip install --user uv",
-
-  "postCreateCommand": "if [ -f pyproject.toml ]; then uv sync; fi && if [ -d .venv ]; then grep -qxF 'source ${containerWorkspaceFolder}/.venv/bin/activate' ~/.bashrc || echo 'source ${containerWorkspaceFolder}/.venv/bin/activate' >> ~/.bashrc; fi && if ! command -v claude >/dev/null 2>&1; then curl -fsSL https://claude.ai/install.sh | bash; fi && claude --version || true",
-
-  "remoteUser": "vscode"
+  "onCreateCommand": "bash -c 'set -e; curl -LsSf https://astral.sh/uv/install.sh | sh; export PATH=\"$HOME/.local/bin:$PATH\"; curl -fsSL https://claude.ai/install.sh | bash; grep -qF \"$HOME/.local/bin\" ~/.bashrc || echo \"export PATH=\\\"\\$HOME/.local/bin:\\$PATH\\\"\" >> ~/.bashrc'",
+  "postCreateCommand": "bash -c 'set -e; export PATH=\"$HOME/.local/bin:$PATH\"; if [ -f pyproject.toml ]; then uv sync; fi; grep -qF \"source ${containerWorkspaceFolder}/.venv/bin/activate\" ~/.bashrc || echo \"[ -f ${containerWorkspaceFolder}/.venv/bin/activate ] && source ${containerWorkspaceFolder}/.venv/bin/activate\" >> ~/.bashrc; claude --version || true'",
+  "remoteUser": "vscode",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "FastAPI App",
+      "onAutoForward": "notify"
+    }
+  }
 }
