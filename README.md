@@ -1,12 +1,8 @@
-# PDF Tools
+# AI Dev Template
 
-PDF の「結合」と「分解」を行う Web アプリ。
+**Claude Code + GitHub Codespaces + Azure App Service** で始める Python Web アプリ開発テンプレートです。
 
-- **バックエンド**: Python 3.11+ / FastAPI
-- **フロントエンド**: HTML/CSS/Vanilla JS（Jinja2 テンプレート）
-- **PDF 操作**: pypdf
-- **DB**: SQLite（将来 Azure SQL / Cosmos DB に切替可）
-- **ストレージ**: ローカル一時保存 / Azure Blob Storage（環境変数で切替）
+**fork → Codespaces 起動 → `claude` でログイン** だけで開発を開始できます。
 
 ---
 
@@ -15,287 +11,146 @@ PDF の「結合」と「分解」を行う Web アプリ。
 ```
 .
 ├── app/
-│   ├── main.py               # FastAPI エントリポイント
-│   ├── database.py           # SQLAlchemy 設定
-│   ├── api/                  # ルーター（merge / split / presets）
-│   ├── services/             # ビジネスロジック
-│   ├── repositories/         # DB アクセス
-│   ├── models/               # SQLAlchemy ORM モデル
-│   ├── schemas/              # Pydantic スキーマ
-│   ├── storage/              # ストレージ抽象化（local / azure）
-│   ├── utils/                # ユーティリティ・例外定義
-│   ├── templates/            # Jinja2 テンプレート
-│   └── static/               # CSS / JS
-├── tests/                    # ユニットテスト
-├── pyproject.toml            # uv によるパッケージ管理
-├── uv.lock
-├── .env.example
-├── startup.sh                # Azure App Service 起動スクリプト
+│   └── main.py              # FastAPI アプリ本体（ここを編集して開発）
+├── .claude/
+│   └── settings.local.json  # Claude Code の安全設定
+├── .devcontainer/
+│   └── devcontainer.json    # Codespaces 環境定義
+├── .github/
+│   └── workflows/
+│       └── deploy-aas-free.yml  # Azure 自動デプロイ
+├── .env.example             # 環境変数のサンプル
+├── .gitignore
+├── pyproject.toml           # Python 依存パッケージ定義
 └── README.md
 ```
 
 ---
 
-## ローカル起動手順
+## 1. Codespaces での開始手順
 
-### 前提
+### Step 1: このリポジトリを fork する
 
-- Python 3.11 以上
-- [uv](https://docs.astral.sh/uv/)
+GitHub 画面右上の **Fork** ボタンをクリック。
 
-### 手順
+### Step 2: Codespaces を起動する
+
+fork したリポジトリで **Code → Codespaces → Create codespace on main** をクリック。
+
+> 初回は数分かかります。Python 3.14・uv・Claude Code が自動インストールされます。
+
+### Step 3: Claude Code にログインする
+
+Codespaces のターミナルで実行：
 
 ```bash
-# 1. リポジトリをクローン
-git clone <repo-url>
-cd <repo-dir>
-
-# 2. 依存パッケージをインストール
-uv sync
-
-# 3. 環境変数を設定（.env ファイルを作成）
-cp .env.example .env
-# .env を編集して STORAGE_BACKEND=local などを確認
-
-# 4. 起動
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+claude
 ```
 
-ブラウザで http://localhost:8000 にアクセス。
+ブラウザが開くので Anthropic アカウントでログインします。
 
-OpenAPI ドキュメントは http://localhost:8000/docs で確認できます。
+> **注意**: APIキーはコードに書かないでください。`claude` コマンドのログインのみで使用できます。
+
+### Step 4: 環境変数ファイルを作成する（必要な場合）
+
+```bash
+cp .env.example .env
+# .env を編集して必要な値を設定する
+```
 
 ---
 
-## テスト実行
+## 2. ローカル実行
+
+```bash
+# 依存パッケージのインストール（初回のみ）
+uv sync
+
+# 開発サーバー起動
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+| URL | 内容 |
+|-----|------|
+| `http://localhost:8000` | トップページ |
+| `http://localhost:8000/docs` | API ドキュメント (Swagger UI) |
+| `http://localhost:8000/health` | ヘルスチェック |
+
+---
+
+## 3. 開発の進め方
+
+Claude に話しかけながら開発できます：
+
+```bash
+claude
+```
+
+例：
+```
+POST /api/greet エンドポイントを app/main.py に追加してください。
+name と age を受け取り、「Hello, {name}! あなたは{age}歳ですね。」を返します。
+```
+
+### テスト実行
 
 ```bash
 uv run pytest tests/ -v
 ```
 
----
-
-## 環境変数一覧
-
-| 変数名 | デフォルト | 説明 |
-|--------|-----------|------|
-| `STORAGE_BACKEND` | `local` | `local` または `azure` |
-| `LOCAL_STORAGE_ROOT` | `/tmp/pdf_tools` | ローカル保存先ディレクトリ |
-| `DATABASE_URL` | `sqlite:///./pdf_tools.db` | SQLAlchemy 接続 URL |
-| `AZURE_STORAGE_CONNECTION_STRING` | ー | Azure Blob 接続文字列（azure 時） |
-| `AZURE_STORAGE_ACCOUNT_NAME` | ー | Azure ストレージアカウント名（Managed Identity 時） |
-| `AZURE_BLOB_CONTAINER` | `pdf-tools` | Blob コンテナ名 |
-
----
-
-## Azure App Service デプロイ手順
-
-### 前提
-
-- Azure CLI インストール済み
-- Azure サブスクリプション・リソースグループ作成済み
-
-### 手順
+### パッケージ追加
 
 ```bash
-# 1. App Service プランを作成（Linux / Python 3.11）
-az appservice plan create \
-  --name pdf-tools-plan \
-  --resource-group <rg-name> \
-  --sku B1 \
-  --is-linux
-
-# 2. Web App を作成
-az webapp create \
-  --name pdf-tools-app \
-  --resource-group <rg-name> \
-  --plan pdf-tools-plan \
-  --runtime "PYTHON:3.11"
-
-# 3. アプリ設定（環境変数）を登録
-az webapp config appsettings set \
-  --name pdf-tools-app \
-  --resource-group <rg-name> \
-  --settings \
-    STORAGE_BACKEND=local \
-    DATABASE_URL="sqlite:////home/site/wwwroot/pdf_tools.db"
-
-# 4. 起動コマンドを設定
-az webapp config set \
-  --name pdf-tools-app \
-  --resource-group <rg-name> \
-  --startup-file "bash startup.sh"
-
-# 5. ソースコードをデプロイ（ZIP デプロイ）
-zip -r deploy.zip . -x ".git/*" ".venv/*" "__pycache__/*" "*.pyc"
-az webapp deployment source config-zip \
-  --name pdf-tools-app \
-  --resource-group <rg-name> \
-  --src deploy.zip
+uv add sqlalchemy
 ```
-
-デプロイ後、`https://pdf-tools-app.azurewebsites.net` でアクセス可能。
 
 ---
 
-## Azure Blob Storage への切り替え方法
+## 4. Azure App Service へのデプロイ
 
-### 1. パッケージを有効化
+### Step 1: Azure App Service を作成する
 
 ```bash
-uv sync --extra azure
+az login
+az group create --name my-app-rg --location japaneast
+az appservice plan create --name my-app-plan --resource-group my-app-rg --sku F1 --is-linux
+az webapp create --name my-app-xxxx --resource-group my-app-rg --plan my-app-plan --runtime "PYTHON|3.14"
 ```
 
-### 2. 環境変数を設定
+> `my-app-xxxx` は世界で一意な名前にしてください。
+
+### Step 2: GitHub Secrets に認証情報を登録する
 
 ```bash
-# 接続文字列方式（開発・CI）
-az webapp config appsettings set \
-  --name pdf-tools-app \
-  --resource-group <rg-name> \
-  --settings \
-    STORAGE_BACKEND=azure \
-    AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=..."
-
-# Managed Identity 方式（本番推奨）
-az webapp config appsettings set \
-  --name pdf-tools-app \
-  --resource-group <rg-name> \
-  --settings \
-    STORAGE_BACKEND=azure \
-    AZURE_STORAGE_ACCOUNT_NAME=your-storage-account
+az ad sp create-for-rbac \
+  --name my-app-deploy \
+  --role contributor \
+  --scopes /subscriptions/<サブスクリプションID>/resourceGroups/my-app-rg \
+  --sdk-auth
 ```
 
-### 3. Managed Identity を有効化（本番推奨）
+出力された JSON を、fork したリポジトリの **Settings → Secrets and variables → Actions** で `AZURE_CREDENTIALS` として登録。
 
-```bash
-# Web App に System-assigned Managed Identity を付与
-az webapp identity assign \
-  --name pdf-tools-app \
-  --resource-group <rg-name>
+### Step 3: ワークフローのアプリ名を変更する
 
-# Storage Blob Data Contributor ロールを付与
-az role assignment create \
-  --assignee <principal-id> \
-  --role "Storage Blob Data Contributor" \
-  --scope /subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.Storage/storageAccounts/<account>
+`.github/workflows/deploy-aas-free.yml` の以下を編集：
+
+```yaml
+AZURE_WEBAPP_NAME: my-app-xxxx  # ← Step 1 で作成したアプリ名に変更
 ```
 
-コード変更なし。環境変数の切替のみで動作します。
+### Step 4: main ブランチに push する
+
+GitHub Actions が自動でデプロイします（**Actions タブ**で確認）。
 
 ---
 
-## 分解機能: ZIP 構成仕様
+## 注意事項
 
-分解結果 ZIP のファイル構成は以下の通りです。
-
-```
-{元ファイル名}/
-  {元ファイル名}_001.pdf
-  {元ファイル名}_002.pdf
-  ...
-```
-
-例: `sample.pdf` を分解した場合
-
-```
-sample/
-  sample_001.pdf
-  sample_002.pdf
-  sample_003.pdf
-```
-
-- フォルダ名は元PDFのファイル名（拡張子除く）をサニタイズした値
-- 元ファイル名が取得できない場合は `split_result/` フォルダを使用
-- フォルダ名に使えない文字（`\ / : * ? " < > |`）は自動的に `_` に置換
+- `.env` ファイルは **手動で作成**してください（`.env.example` を参考）
+- `.env` は `.gitignore` 対象です。**絶対にコミットしないでください**
+- APIキー・パスワードはすべて環境変数で管理してください
+- このテンプレートは認証なしの構成です。本番運用時は認証を追加してください
+- 機密情報（個人情報・医療情報など）の取り扱いには法令に従った追加対応が必要です
 
 ---
-
-## 分解機能: ファイル名テンプレート仕様
-
-分解後のファイル名はテンプレートで指定します。
-
-### デフォルト値
-
-```
-{original_name}_{index:03d}.pdf
-```
-
-例: 元ファイル `report.pdf` → `report_001.pdf`, `report_002.pdf`, ...
-
-### 使用可能なプレースホルダ
-
-| プレースホルダ | 説明 | 例 |
-|---|---|---|
-| `{original_name}` | 元ファイル名（拡張子なし） | `report` |
-| `{index}` | 連番（1始まり） | `1`, `2`, `3` |
-| `{index:03d}` | ゼロ埋め連番 | `001`, `002`, `003` |
-| `{start}` | 分割範囲の開始ページ番号 | `1`, `4`, `8` |
-| `{end}` | 分割範囲の終了ページ番号 | `3`, `7`, `10` |
-
-### ファイル名のサニタイズ
-
-- `.pdf` は省略可（末尾に自動補完）
-- 使用不可文字（`\ / : * ? " < > |`）は自動的に `_` に置換
-- `../` などの危険な相対パスは除去
-- サニタイズ後に空文字になる場合は `output` を使用
-
----
-
-## 結合機能: 複数ファイル対応
-
-- ドラッグ＆ドロップエリアに複数 PDF を一度にドロップ可能
-- ファイル選択ダイアログでも複数選択可能
-- PDF 以外のファイルが含まれていた場合は除外してエラーメッセージを表示（他ファイルは処理継続）
-- 同名ファイルは UUID ベースの `file_id` で内部的に区別
-
----
-
-## 結合機能: ページサムネイル表示
-
-アップロード後、各ページのサムネイルを表示して並べ替えを行います。
-
-- **実装方式**: フロントエンドで PDF.js (pdfjs-dist) を使用してブラウザ側でレンダリング
-- サーバーサイドへの追加リクエストなし（ローカルファイルから描画）
-- サムネイルは幅 80px に縮小して表示
-- ページ数が多い場合は進捗状況を表示
-
-### 追加依存ライブラリ（フロントエンド）
-
-| ライブラリ | バージョン | 用途 | 導入方式 |
-|---|---|---|---|
-| pdfjs-dist | 4.4.168 | PDF サムネイル描画 | CDN（サーバーサイド不要） |
-| SortableJS | 1.15.2 | ページ並べ替え | CDN（既存） |
-
-CDN 読み込みに失敗した場合は自動的にテキストのみのプレースホルダを表示します。
-
----
-
-## 制約と今後の改善案
-
-### 現在の制約
-
-| 項目 | 現状 |
-|------|------|
-| アップロード上限 | 50 MB / ファイル（`MAX_UPLOAD_BYTES`） |
-| ページ数上限 | 1,000 ページ / ファイル |
-| 一時ファイル削除 | 結合・分解の出力後に削除。アップロードファイルは残る（手動クリーンアップ必要） |
-| 認証 | なし（後付け可能な構造） |
-| プリセット対応 | 分解のみ（結合ルールのプリセットは未実装） |
-| 並行アップロード | 単一ユーザー想定（session 分離なし） |
-
-### 今後の改善案
-
-1. **認証追加**: `app/main.py` に `AuthMiddleware` を追加するだけで対応可。FastAPI の `Depends` を活用して各エンドポイントに `current_user` を注入する構造を推奨。
-
-2. **一時ファイル自動クリーンアップ**: 定期実行（Azure Functions タイマートリガー等）で `uploads/` ディレクトリを TTL ベースで削除。
-
-3. **結合プリセット**: `mode: "merge"` でページ順序をプリセット保存できるよう schema と DB を拡張。
-
-4. **非同期処理**: 大容量 PDF の結合・分解を Azure Service Bus + Worker に切り出し、進捗をポーリング。
-
-5. **Azure SQL 移行**: `DATABASE_URL` を MSSQL 接続文字列に変更するだけで SQLAlchemy ORM が動作する。マイグレーションには Alembic を導入推奨。
-
-6. **CORS 設定**: SPA 分離構成にする場合は `fastapi.middleware.cors.CORSMiddleware` を追加。
-
-7. **レート制限**: `slowapi` 等で IP ベースのレート制限を導入し DoS 対策を強化。

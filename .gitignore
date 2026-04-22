@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+CACHEDIR.TAG
+pyvenv.cfg
+.python-version
+
+# uv
+# uv.lock はテンプレートの再現性向上のためコミット対象
+# uv.lock
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Linters
+.ruff_cache/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.envrc
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+credentials.json
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Azure
+antenv/
+
+# Database
+*.db
+*.sqlite3

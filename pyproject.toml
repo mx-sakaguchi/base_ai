@@ -1,35 +1,19 @@
 [project]
-name = "tyouseisan"
+name = "ai-dev-template"
 version = "0.1.0"
-description = "PDF の結合・分解を行う Web アプリ"
+description = "Claude Code + GitHub Codespaces + Azure App Service テンプレート"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
-    # Web フレームワーク
     "fastapi>=0.115.5",
     "uvicorn[standard]>=0.32.1",
-    "python-multipart>=0.0.19",
-    # テンプレートエンジン
-    "jinja2>=3.1.4",
-    # PDF 操作
-    "pypdf>=5.1.0",
-    # DB (SQLite / Azure SQL 切替可)
-    "sqlalchemy>=2.0.36",
-    # バリデーション
-    "pydantic>=2.10.2",
-    "pydantic-settings>=2.6.1",
-]
-
-[project.optional-dependencies]
-# Azure Blob Storage を使う場合: uv sync --extra azure
-azure = [
-    "azure-storage-blob>=12.23.1",
-    "azure-identity>=1.19.0",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8.3.4",
-    "pytest-asyncio>=0.24.0",
     "httpx>=0.28.0",
 ]
+
+[tool.uv]
+python-downloads = "automatic"

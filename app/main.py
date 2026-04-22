@@ -1,69 +1,60 @@
 """
-FastAPI application entry point.
+最小構成の FastAPI アプリケーション。
+ここを起点に機能を追加してください。
 
-認証を後付けしやすいよう、ミドルウェア追加の余地を明示的に残している。
-将来は app.add_middleware(AuthMiddleware, ...) をここに追加するだけでよい。
+セキュリティ方針:
+- 環境変数で設定を外部化（secrets をコードに直書きしない）
+- HTTPS のみを前提とした設計（Azure App Service は HTTPS を強制可能）
+- 不要なポートは開放しない（80/443 のみ前提）
 """
 
-import logging
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-
-from app.api import merge, presets, split
-from app.database import init_db
-from app.utils.exceptions import AppError
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """アプリ起動時に DB 初期化を行う"""
-    logger.info("Starting up: initializing database")
-    init_db()
-    yield
-    logger.info("Shutting down")
-
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(
-    title="PDF Tools",
-    description="PDF 結合・分解 Web アプリ",
-    version="1.0.0",
-    lifespan=lifespan,
+    title="My App",
+    description="Claude Code + Azure で作る Web アプリのテンプレートです",
+    version="0.1.0",
 )
 
-# --- 静的ファイル・テンプレート ---
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
 
-# --- API ルーター ---
-app.include_router(merge.router, prefix="/api/merge", tags=["merge"])
-app.include_router(split.router, prefix="/api/split", tags=["split"])
-app.include_router(presets.router, prefix="/api/presets", tags=["presets"])
+@app.get("/", response_class=HTMLResponse)
+def read_root() -> HTMLResponse:
+    """トップページ"""
+    html = """
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My App</title>
+        <style>
+            body { font-family: sans-serif; max-width: 600px; margin: 80px auto; padding: 0 20px; }
+            h1 { color: #333; }
+            a { color: #0070f3; }
+        </style>
+    </head>
+    <body>
+        <h1>Hello, World!</h1>
+        <p>FastAPI テンプレートが正常に動いています。</p>
+        <ul>
+            <li><a href="/docs">API ドキュメント (Swagger UI)</a></li>
+            <li><a href="/health">ヘルスチェック</a></li>
+            <li><a href="/api/hello?name=Claude">サンプル API</a></li>
+        </ul>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
 
 
-# --- グローバル例外ハンドラ ---
-@app.exception_handler(AppError)
-async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
-    logger.warning("AppError: %s", exc.message)
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+@app.get("/health")
+def health_check() -> dict[str, str]:
+    """ヘルスチェックエンドポイント（Azure App Service の監視用）"""
+    return {"status": "ok"}
 
 
-@app.exception_handler(Exception)
-async def unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    logger.exception("Unhandled error")
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
-
-
-# --- フロントエンド ---
-@app.get("/", include_in_schema=False)
-async def index(request: Request):
-    return templates.TemplateResponse(request, "index.html")
+@app.get("/api/hello")
+def hello(name: str = "World") -> dict[str, str]:
+    """サンプル API エンドポイント。?name= で名前を渡せます"""
+    return {"message": f"Hello, {name}!"}
