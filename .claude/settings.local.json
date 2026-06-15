@@ -26,7 +26,6 @@
       "Bash(touch:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Bash(python -c \"import ast; ast.parse(open('app/main.py').read()); print('main.py: OK')\")",
       "Bash(python -c \"import json; json.load(open('.devcontainer/devcontainer.json')); print('devcontainer.json: OK')\")",
       "Bash(python -c \"import json; json.load(open('.claude/settings.local.json')); print('settings.local.json: OK')\")"
     ],
